@@ -22,5 +22,6 @@ struct Constant {
     }
     
     //MARK: -Colors
+
     static let cellBackgroundColor: UIColor = UIColor(red: 237/255, green: 248/255, blue: 235/255, alpha: 1)
 }

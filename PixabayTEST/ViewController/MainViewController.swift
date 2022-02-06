@@ -39,8 +39,7 @@ class MainViewController: UIViewController, UIPopoverPresentationControllerDeleg
     
     private func configure() {
         let layout = UICollectionViewFlowLayout()
-        //let size = CGFloat((collectionViewOutlet.frame.width - 10)/2)
-        let size = 50
+        let size = CGFloat((collectionViewOutlet.frame.width - 10)/2)
         layout.itemSize = CGSize(width: size, height: size)
         collectionViewOutlet.collectionViewLayout = layout
         collectionViewOutlet.backgroundColor = .clear
@@ -131,5 +130,9 @@ extension MainViewController: UISearchBarDelegate, UISearchDisplayDelegate {
                 }
             }
         }
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        searchBarOutlet.endEditing(true)
     }
 }

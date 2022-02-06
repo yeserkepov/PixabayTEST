@@ -23,6 +23,7 @@ class CollectionCell: UICollectionViewCell {
         super.awakeFromNib()
         self.contentView.backgroundColor = Constant.cellBackgroundColor
         self.layer.cornerRadius = 10
+        self.labelOutlet.textColor = .darkGray
     }
     
     override func prepareForReuse() {
