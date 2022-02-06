@@ -6,10 +6,59 @@
 //
 
 import Foundation
+import UIKit
+
+enum Animate {
+    case animateIn
+    case animateOut
+}
 
 class Manager {
     
     static let shared = Manager()
+    
+    func animatePopUp(popup: UIView, background: UIView, animate: Animate) {
+        background.addSubview(popup)
+        switch animate {
+        case .animateIn:
+            popup.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+            popup.alpha = 0
+            popup.center = background.center
+            
+            UIView.animate(withDuration: 0.3) {
+                popup.transform = CGAffineTransform(scaleX: 1, y: 1)
+                popup.alpha = 1
+            }
+        case .animateOut:
+            UIView.animate(withDuration: 0.3) {
+                popup.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+                popup.alpha = 0
+            } completion: { _ in
+                popup.removeFromSuperview()
+            }
+        }
+    }
+    
+    func configurePopUpImage(image : UIImageView, with model: PhotoModel) {
+        guard let url = URL(string: model.largeImageURL!) else { return }
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else { return }
+            DispatchQueue.main.async {
+                let picture = UIImage(data: data)
+                image.image = picture
+            }
+        }.resume()
+    }
+    
+    //TODO: should try to implement
+    
+//    func playVideo(with playerVC: AVPlayerViewController,from model: VideoModel) {
+//        guard let url = URL(string: model.preview!) else { return }
+//        DispatchQueue.main.async {
+//            playerVC.player = AVPlayer(url: url)
+//        }
+//    }
+    
     
     func fetchPhoto(with search: String, complition: @escaping ([PhotoModel]) -> Void?) {
         guard let url = URL(string: Constant.API.photoAPI + search) else { return }
@@ -55,7 +104,7 @@ class Manager {
                         print(videoArray)
                         complition(videoArray)
                     }
-                } 
+                }
             }
         }.resume()
     }

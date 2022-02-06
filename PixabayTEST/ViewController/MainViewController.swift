@@ -7,33 +7,40 @@
 
 import UIKit
 import AVKit
-import AVFoundation
 
 class MainViewController: UIViewController, UIPopoverPresentationControllerDelegate {
     
     @IBOutlet weak var collectionViewOutlet: UICollectionView!
     @IBOutlet weak var searchBarOutlet: UISearchBar!
     @IBOutlet weak var segmentedControlOutlet: UISegmentedControl!
+    @IBOutlet var popUpViewOutlet: UIView!
+    @IBOutlet var blurViewOutlet: UIVisualEffectView!
+    @IBOutlet weak var popUpImageView: UIImageView!
     
     private var photoData: [PhotoModel] = []
     private var videoData: [VideoModel] = []
-    
+    private var playerViewController = AVPlayerViewController()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configure()
     }
     
-    @IBAction func segmentDidChanged(_ sender: UISegmentedControl) {
-        collectionViewOutlet.reloadData()
+    @IBAction func closePopUpButton(_ sender: UIButton) {
+        Manager.shared.animatePopUp(popup: popUpViewOutlet, background: self.view, animate: .animateOut)
+        Manager.shared.animatePopUp(popup: blurViewOutlet, background: self.view, animate: .animateOut)
+        popUpImageView.image = nil
     }
     
-
+    @IBAction func segmentDidChanged(_ sender: UISegmentedControl) {
+        collectionViewOutlet.reloadData()
+        searchBarOutlet.text = nil
+    }
     
-  
     private func configure() {
         let layout = UICollectionViewFlowLayout()
-        let size = CGFloat((collectionViewOutlet.frame.width - 10)/2)
+        //let size = CGFloat((collectionViewOutlet.frame.width - 10)/2)
+        let size = 50
         layout.itemSize = CGSize(width: size, height: size)
         collectionViewOutlet.collectionViewLayout = layout
         collectionViewOutlet.backgroundColor = .clear
@@ -41,6 +48,8 @@ class MainViewController: UIViewController, UIPopoverPresentationControllerDeleg
         collectionViewOutlet.dataSource = self
         collectionViewOutlet.delegate = self
         searchBarOutlet.delegate = self
+        blurViewOutlet.bounds = self.view.bounds
+        popUpViewOutlet.bounds = CGRect(x: 0, y: 0, width: self.view.bounds.width * 0.9, height: self.view.bounds.height * 0.3)
     }
 }
 
@@ -68,7 +77,7 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
             cell.configure(with: videoData[indexPath.row])
         }
         
-        //TODO: -will it work?
+        //MARK: -will it work?
         //segmentedControlOutlet.selectedSegmentIndex == 0 ? cell.configure(with: photoData[indexPath.row]) : cell.configure(with: videoData[indexPath.row])
         return cell
     }
@@ -85,14 +94,26 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         let size = CGFloat((collectionViewOutlet.frame.width - 10)/2)
         return CGSize(width: size, height: size)
     }
-//
-//    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        <#code#>
-//    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        //TODO: -add spinner
+        
+        if segmentedControlOutlet.selectedSegmentIndex == 0 {
+            Manager.shared.configurePopUpImage(image: popUpImageView, with: photoData[indexPath.row])
+            Manager.shared.animatePopUp(popup: blurViewOutlet, background: self.view, animate: .animateIn)
+            Manager.shared.animatePopUp(popup: popUpViewOutlet, background: self.view, animate: .animateIn)
+        } else if segmentedControlOutlet.selectedSegmentIndex == 1 {
+            guard let url = URL(string: videoData[indexPath.row].url!) else { return }
+            playerViewController.player = AVPlayer(url: url)
+            present(playerViewController, animated: false) {
+                self.playerViewController.player?.play()
+            }
+        }
+    }
 }
 
 extension MainViewController: UISearchBarDelegate, UISearchDisplayDelegate {
-    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let searchText = searchBar.text?.trim()
         if segmentedControlOutlet.selectedSegmentIndex == 0 {

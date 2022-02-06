@@ -35,6 +35,19 @@ class CollectionCell: UICollectionViewCell {
         print("button pressed")
     }
     
+    public func configure(withLargeURL model: PhotoModel) {
+        playButtonOutlet.isHidden = true
+        guard let url = URL(string: model.largeImageURL!) else { return }
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+            guard let data = data, error == nil else { return }
+            DispatchQueue.main.async {
+                let image = UIImage(data: data)
+                self?.imageViewOutlet.image = image
+                self?.labelOutlet.text = model.tags?.tagTrimmer()
+            }
+        }.resume()
+    }
+    
     public func configure(with model: PhotoModel) {
         playButtonOutlet.isHidden = true
         guard let url = URL(string: model.previewURL!) else { return }
